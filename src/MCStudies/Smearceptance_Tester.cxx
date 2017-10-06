@@ -134,7 +134,13 @@ Smearceptance_Tester::Smearceptance_Tester(nuiskey samplekey) {
   ETrueDistrib = NULL;
   ETrueDistrib_noweight = NULL;
   ERecDistrib = NULL;
+  ERecDistrib_CC0Pi = NULL;
+  ERecDistrib_CC1Pi = NULL;
+  ERecDistrib_CCOther = NULL;
   RecoSmear = NULL;
+  RecoSmear_CC0Pi = NULL;
+  RecoSmear_CC1Pi = NULL;
+  RecoSmear_CCOther = NULL;
   if (RecBinL != 0xdeadbeef) {
     QLOG(SAM, "Using binning True: " << TrueNBins << ", [" << TrueBinL << " -- "
                                      << TrueBinH << "], Rec: " << RecNBins
@@ -151,10 +157,38 @@ Smearceptance_Tester::Smearceptance_Tester(nuiskey samplekey) {
     ETrueDistrib->Sumw2();
     ERecDistrib->Sumw2();
 
+    ERecDistrib_CC0Pi = new TH1D("ELepRec_rate_CC0Pi", ";Rec E_{#nu};Count", RecNBins,
+                           RecBinL, RecBinH);
+
+    ERecDistrib_CC1Pi = new TH1D("ELepRec_rate_CC1Pi", ";Rec E_{#nu};Count", RecNBins,
+                           RecBinL, RecBinH);
+                           
+    ERecDistrib_CCOther = new TH1D("ELepRec_rate_CCOther", ";Rec E_{#nu};Count", RecNBins,
+                           RecBinL, RecBinH);
+
+    ERecDistrib_CC0Pi->Sumw2();
+    ERecDistrib_CC1Pi->Sumw2();
+    ERecDistrib_CCOther->Sumw2();
+
     RecoSmear =
         new TH2D("ELepHadVis_Recon", ";True E_{#nu};Recon. E_{#nu}", RecNBins,
                  RecBinL, RecBinH, TrueNBins, TrueBinL, TrueBinH);
     RecoSmear->Sumw2();
+
+    RecoSmear_CC0Pi =
+        new TH2D("ELepHadVis_Recon_CC0Pi", ";True E_{#nu};Recon. E_{#nu}", RecNBins,
+                 RecBinL, RecBinH, TrueNBins, TrueBinL, TrueBinH);
+    RecoSmear_CC0Pi->Sumw2();
+
+    RecoSmear_CC1Pi =
+        new TH2D("ELepHadVis_Recon_CC1Pi", ";True E_{#nu};Recon. E_{#nu}", RecNBins,
+                 RecBinL, RecBinH, TrueNBins, TrueBinL, TrueBinH);
+    RecoSmear_CC1Pi->Sumw2();
+
+    RecoSmear_CCOther =
+        new TH2D("ELepHadVis_Recon_CCOther", ";True E_{#nu};Recon. E_{#nu}", RecNBins,
+                 RecBinL, RecBinH, TrueNBins, TrueBinL, TrueBinH);
+    RecoSmear_CCOther->Sumw2();
   }
 
   // Final setup  ---------------------------------------------------
@@ -178,13 +212,10 @@ void Smearceptance_Tester::AddEventVariablesToTree() {
 
     eventVariables->Branch("EISLep_true", &EISLep_true, "EISLep_true/F");
 
-    eventVariables->Branch("HMFS_clep_true", &HMFS_clep_true);
+    eventVariables->Branch("HMFS_mu_true", &HMFS_mu_true);
     eventVariables->Branch("HMFS_pip_true", &HMFS_pip_true);
     eventVariables->Branch("HMFS_pim_true", &HMFS_pim_true);
     eventVariables->Branch("HMFS_cpi_true", &HMFS_cpi_true);
-    eventVariables->Branch("HMFS_pi0_true", &HMFS_pi0_true);
-    eventVariables->Branch("HMFS_cK_true", &HMFS_cK_true);
-    eventVariables->Branch("HMFS_K0_true", &HMFS_K0_true);
     eventVariables->Branch("HMFS_p_true", &HMFS_p_true);
 
     eventVariables->Branch("KEFSHad_cpip_true", &KEFSHad_cpip_true,
@@ -195,10 +226,6 @@ void Smearceptance_Tester::AddEventVariablesToTree() {
                            "KEFSHad_cpi_true/F");
     eventVariables->Branch("TEFSHad_pi0_true", &TEFSHad_pi0_true,
                            "TEFSHad_pi0_true/F");
-    eventVariables->Branch("KEFSHad_cK_true", &KEFSHad_cK_true,
-                           "KEFSHad_cK_true/F");
-    eventVariables->Branch("KEFSHad_K0_true", &KEFSHad_K0_true,
-                           "KEFSHad_K0_true/F");
     eventVariables->Branch("KEFSHad_p_true", &KEFSHad_p_true,
                            "KEFSHad_p_true/F");
     eventVariables->Branch("KEFSHad_n_true", &KEFSHad_n_true,
@@ -222,16 +249,11 @@ void Smearceptance_Tester::AddEventVariablesToTree() {
                            "Ncpiminus_true/I");
     eventVariables->Branch("Ncpi_true", &Ncpi_true, "Ncpi_true/I");
     eventVariables->Branch("Npi0_true", &Npi0_true, "Npi0_true/I");
-    eventVariables->Branch("NcK_true", &NcK_true, "NcK_true/I");
-    eventVariables->Branch("NK0_true", &NK0_true, "NK0_true/I");
 
-    eventVariables->Branch("HMFS_clep_rec", &HMFS_clep_rec);
+    eventVariables->Branch("HMFS_mu_rec", &HMFS_mu_rec);
     eventVariables->Branch("HMFS_pip_rec", &HMFS_pip_rec);
     eventVariables->Branch("HMFS_pim_rec", &HMFS_pim_rec);
     eventVariables->Branch("HMFS_cpi_rec", &HMFS_cpi_rec);
-    eventVariables->Branch("HMFS_pi0_rec", &HMFS_pi0_rec);
-    eventVariables->Branch("HMFS_cK_rec", &HMFS_cK_rec);
-    eventVariables->Branch("HMFS_K0_rec", &HMFS_K0_rec);
     eventVariables->Branch("HMFS_p_rec", &HMFS_p_rec);
 
     eventVariables->Branch("KEFSHad_cpip_rec", &KEFSHad_cpip_rec,
@@ -242,10 +264,6 @@ void Smearceptance_Tester::AddEventVariablesToTree() {
                            "KEFSHad_cpi_rec/F");
     eventVariables->Branch("TEFSHad_pi0_rec", &TEFSHad_pi0_rec,
                            "TEFSHad_pi0_rec/F");
-    eventVariables->Branch("KEFSHad_cK_rec", &KEFSHad_cK_rec,
-                           "KEFSHad_cK_rec/F");
-    eventVariables->Branch("KEFSHad_K0_rec", &KEFSHad_K0_rec,
-                           "KEFSHad_K0_rec/F");
     eventVariables->Branch("KEFSHad_p_rec", &KEFSHad_p_rec, "KEFSHad_p_rec/F");
     eventVariables->Branch("KEFSHad_n_rec", &KEFSHad_n_rec, "KEFSHad_n_rec/F");
 
@@ -256,8 +274,6 @@ void Smearceptance_Tester::AddEventVariablesToTree() {
     eventVariables->Branch("EFSVis_cpim", &EFSVis_cpim, "EFSVis_cpim/F");
     eventVariables->Branch("EFSVis_cpi", &EFSVis_cpi, "EFSVis_cpi/F");
     eventVariables->Branch("EFSVis_pi0", &EFSVis_pi0, "EFSVis_pi0/F");
-    eventVariables->Branch("EFSVis_cK", &EFSVis_cK, "EFSVis_cK/F");
-    eventVariables->Branch("EFSVis_K0", &EFSVis_K0, "EFSVis_K0/F");
     eventVariables->Branch("EFSVis_p", &EFSVis_p, "EFSVis_p/F");
     eventVariables->Branch("EFSVis_n", &EFSVis_n, "EFSVis_n/F");
     eventVariables->Branch("EFSVis_gamma", &EFSVis_gamma, "EFSVis_gamma/F");
@@ -272,8 +288,6 @@ void Smearceptance_Tester::AddEventVariablesToTree() {
     eventVariables->Branch("Ncpim_seen", &Ncpim_seen, "Ncpim_seen/I");
     eventVariables->Branch("Ncpi_seen", &Ncpi_seen, "Ncpi_seen/I");
     eventVariables->Branch("Npi0_seen", &Npi0_seen, "Npi0_seen/I");
-    eventVariables->Branch("NcK_seen", &NcK_seen, "NcK_seen/I");
-    eventVariables->Branch("NK0_seen", &NK0_seen, "NK0_seen/I");
     eventVariables->Branch("Nothers_seen", &Nothers_seen, "Nothers_seen/I");
 
     eventVariables->Branch("EISLep_QE_rec", &EISLep_QE_rec, "EISLep_QE_rec/F");
@@ -294,10 +308,6 @@ void Smearceptance_Tester::AddEventVariablesToTree() {
                            "Ncpi_contributed/I");
     eventVariables->Branch("Npi0_contributed", &Npi0_contributed,
                            "Npi0_contributed/I");
-    eventVariables->Branch("NcK_contributed", &NcK_contributed,
-                           "NcK_contributed/I");
-    eventVariables->Branch("NK0_contributed", &NK0_contributed,
-                           "NK0_contributed/I");
     eventVariables->Branch("Ngamma_contributed", &Ngamma_contributed,
                            "Ngamma_contributed/I");
     eventVariables->Branch("Nothers_contibuted", &Nothers_contibuted,
@@ -314,15 +324,12 @@ void Smearceptance_Tester::AddEventVariablesToTree() {
 
     eventVariables->Branch("flagCCINC_true", &flagCCINC_true,
                            "flagCCINC_true/O");
-    eventVariables->Branch("flagCC0K_true", &flagCC0K_true,
-                           "flagCC0K_true/O");
     eventVariables->Branch("flagCC0Pi_true", &flagCC0Pi_true,
                            "flagCC0Pi_true/O");
     eventVariables->Branch("flagCC1Pi_true", &flagCC1Pi_true,
                            "flagCC1Pi_true/O");
 
     eventVariables->Branch("flagCCINC_rec", &flagCCINC_rec, "flagCCINC_rec/O");
-    eventVariables->Branch("flagCC0K_rec", &flagCC0K_rec, "flagCC0K_rec/O");
     eventVariables->Branch("flagCC0Pi_rec", &flagCC0Pi_rec, "flagCC0Pi_rec/O");
     eventVariables->Branch("flagCC1Pi_rec", &flagCC1Pi_rec, "flagCC1Pi_rec/O");
   }
@@ -463,40 +470,29 @@ void Smearceptance_Tester::FillEventVariables(FitEvent *event) {
   static int const cpipPDG[] = {211};
   static int const cpimPDG[] = {-211};
   static int const pi0PDG[] = {111};
-
-  static int const cKPDG[] = {321, -321};
-  static int const K0PDG[] = {311, 310, 130};
-
   static int const ProtonPDG[] = {2212};
   static int const NeutronPDG[] = {2112};
   static int const GammaPDG[] = {22};
   static int const CLeptonPDGs[] = {11, 13, 15, -11, -13, -15};
-  static int const ExplicitPDGs[] = {211,  -211, 111, 321, -321, 311, 310, 130,
-                                     2212, 2112, 22,  11,  13,   15,  12,  14,
-                                     16,   -11,  -13, -15, -12,  -14, -16};
+  static int const ExplicitPDGs[] = {211, -211, 111, 2212, 2112, 22,
+                                     11,  13,   15,  12,   14,   16};
 
   RecoInfo *ri = smearceptor->Smearcept(event);
 
-  //** START Pions
-
-  HMFS_clep_true = TLorentzVector(0, 0, 0, 0);
-  HMFS_clep_rec = TLorentzVector(0, 0, 0, 0);
-  FitParticle *fsCLep = event->GetHMFSParticle(CLeptonPDGs);
-  if (fsCLep) {
-    HMFS_clep_true = fsCLep->P4();
-    HMFS_clep_rec = GetHMFSRecParticles(*ri, fsCLep->PDG());
+  HMFS_mu_true = TLorentzVector(0, 0, 0, 0);
+  HMFS_mu_rec = TLorentzVector(0, 0, 0, 0);
+  FitParticle *fsMu = event->GetHMFSMuon();
+  if (fsMu) {
+    HMFS_mu_true = fsMu->P4();
+    HMFS_mu_rec = GetHMFSRecParticles(*ri, 13);
   }
-
-  //** END Charged leptons
-
-  //** START Pions
 
   HMFS_pip_true = TLorentzVector(0, 0, 0, 0);
   HMFS_pip_rec = TLorentzVector(0, 0, 0, 0);
   FitParticle *fsPip = event->GetHMFSPiPlus();
   if (fsPip) {
     HMFS_pip_true = fsPip->P4();
-    HMFS_pip_rec = GetHMFSRecParticles(*ri, fsPip->PDG());
+    HMFS_pip_rec = GetHMFSRecParticles(*ri, 211);
   }
 
   HMFS_pim_true = TLorentzVector(0, 0, 0, 0);
@@ -504,7 +500,7 @@ void Smearceptance_Tester::FillEventVariables(FitEvent *event) {
   FitParticle *fsPim = event->GetHMFSPiMinus();
   if (fsPim) {
     HMFS_pim_true = fsPim->P4();
-    HMFS_pim_rec = GetHMFSRecParticles(*ri, fsPim->PDG());
+    HMFS_pim_rec = GetHMFSRecParticles(*ri, -211);
   }
 
   HMFS_cpi_true = TLorentzVector(0, 0, 0, 0);
@@ -523,44 +519,12 @@ void Smearceptance_Tester::FillEventVariables(FitEvent *event) {
     }
   }
 
-  HMFS_pi0_true = TLorentzVector(0, 0, 0, 0);
-  HMFS_pi0_rec = TLorentzVector(0, 0, 0, 0);
-  FitParticle *fsPi0 = event->GetHMFSPiZero();
-  if (fsPi0) {
-    HMFS_pi0_true = fsPi0->P4();
-    HMFS_pi0_rec = GetHMFSRecParticles(*ri, fsPi0->PDG());
-  }
-
-  //** END Pions
-
-  //** START Kaons
-
-  HMFS_cK_true = TLorentzVector(0, 0, 0, 0);
-  HMFS_cK_rec = TLorentzVector(0, 0, 0, 0);
-  FitParticle *fscK = event->GetHMFSParticle(cKPDG);
-  if (fscK) {
-    HMFS_cK_true = fscK->P4();
-    HMFS_cK_rec = GetHMFSRecParticles(*ri, fscK->PDG());
-  }
-
-  HMFS_K0_true = TLorentzVector(0, 0, 0, 0);
-  HMFS_K0_rec = TLorentzVector(0, 0, 0, 0);
-  FitParticle *fsK0 = event->GetHMFSParticle(K0PDG);
-  if (fsK0) {
-    HMFS_K0_true = fsK0->P4();
-    HMFS_K0_rec = GetHMFSRecParticles(*ri, fsK0->PDG());
-  }
-
-  //** END Kaons
-
-  //** START Nucleons
-
   HMFS_p_true = TLorentzVector(0, 0, 0, 0);
   HMFS_p_rec = TLorentzVector(0, 0, 0, 0);
   FitParticle *fsP = event->GetHMFSProton();
   if (fsP) {
     HMFS_p_true = fsP->P4();
-    HMFS_p_rec = GetHMFSRecParticles(*ri, fsP->PDG());
+    HMFS_p_rec = GetHMFSRecParticles(*ri, 2212);
   }
 
   TLorentzVector FourMomentumTransfer =
@@ -575,14 +539,11 @@ void Smearceptance_Tester::FillEventVariables(FitEvent *event) {
   KEFSHad_cpim_true = FitUtils::SumTE_PartVect(event->GetAllFSPiMinus());
   KEFSHad_cpi_true = KEFSHad_cpip_true + KEFSHad_cpim_true;
   TEFSHad_pi0_true = FitUtils::SumTE_PartVect(event->GetAllFSPiZero());
-  KEFSHad_cK_true = FitUtils::SumTE_PartVect(event->GetAllFSParticle(cKPDG));
-  KEFSHad_K0_true = FitUtils::SumTE_PartVect(event->GetAllFSParticle(K0PDG));
   KEFSHad_p_true = FitUtils::SumKE_PartVect(event->GetAllFSProton());
   KEFSHad_n_true = FitUtils::SumKE_PartVect(event->GetAllFSNeutron());
   EFSHad_true =
       KEFSHad_cpi_true + TEFSHad_pi0_true + KEFSHad_p_true + KEFSHad_n_true;
-  EFSChargedEMHad_true = KEFSHad_cpi_true + TEFSHad_pi0_true + KEFSHad_p_true +
-                         KEFSHad_cK_true + KEFSHad_K0_true;
+  EFSChargedEMHad_true = KEFSHad_cpi_true + TEFSHad_pi0_true + KEFSHad_p_true;
 
   EFSLep_true = event->GetHMFSAnyLeptons()->E();
   EFSgamma_true = FitUtils::SumTE_PartVect(event->GetAllFSPhoton());
@@ -596,8 +557,6 @@ void Smearceptance_Tester::FillEventVariables(FitEvent *event) {
   Ncpiminus_true = event->GetAllFSPiMinus().size();
   Ncpi_true = Ncpiplus_true + Ncpiminus_true;
   Npi0_true = event->GetAllFSPiZero().size();
-  NcK_true = event->GetAllFSParticle(cKPDG).size();
-  NK0_true = event->GetAllFSParticle(K0PDG).size();
 
   KEFSHad_cpip_rec =
       SumKE_RecoInfo(*ri, cpipPDG, PhysConst::mass_cpi * PhysConst::mass_MeV);
@@ -607,12 +566,6 @@ void Smearceptance_Tester::FillEventVariables(FitEvent *event) {
 
   TEFSHad_pi0_rec =
       SumTE_RecoInfo(*ri, pi0PDG, PhysConst::mass_pi0 * PhysConst::mass_MeV);
-
-  KEFSHad_cK_rec =
-      SumKE_RecoInfo(*ri, cKPDG, PhysConst::mass_cK * PhysConst::mass_MeV);
-  KEFSHad_K0_rec =
-      SumKE_RecoInfo(*ri, K0PDG, PhysConst::mass_K0 * PhysConst::mass_MeV);
-
   KEFSHad_p_rec = SumKE_RecoInfo(*ri, ProtonPDG,
                                  PhysConst::mass_proton * PhysConst::mass_MeV);
   KEFSHad_n_rec = SumKE_RecoInfo(*ri, NeutronPDG,
@@ -632,14 +585,11 @@ void Smearceptance_Tester::FillEventVariables(FitEvent *event) {
   EFSVis_cpim = SumVisE_RecoInfo(*ri, cpimPDG);
   EFSVis_cpi = EFSVis_cpip + EFSVis_cpim;
   EFSVis_pi0 = SumVisE_RecoInfo(*ri, pi0PDG);
-  EFSVis_cK = SumVisE_RecoInfo(*ri, cKPDG);
-  EFSVis_K0 = SumVisE_RecoInfo(*ri, K0PDG);
   EFSVis_p = SumVisE_RecoInfo(*ri, ProtonPDG);
   EFSVis_n = SumVisE_RecoInfo(*ri, NeutronPDG);
   EFSVis_gamma = SumVisE_RecoInfo(*ri, GammaPDG);
   EFSVis_other = SumVisE_RecoInfo_NotPdgs(*ri, ExplicitPDGs);
-  EFSVis = EFSVis_cpi + EFSVis_pi0 + EFSVis_p + EFSVis_n + EFSVis_gamma +
-           EFSVis_cK + EFSVis_K0;
+  EFSVis = EFSVis_cpi + EFSVis_pi0 + EFSVis_p + EFSVis_n + EFSVis_gamma;
 
   FSCLep_seen = CountNPdgsSeen(*ri, CLeptonPDGs);
   Nprotons_seen = CountNPdgsSeen(*ri, ProtonPDG);
@@ -648,8 +598,6 @@ void Smearceptance_Tester::FillEventVariables(FitEvent *event) {
   Ncpim_seen = CountNPdgsSeen(*ri, cpimPDG);
   Ncpi_seen = Ncpip_seen + Ncpim_seen;
   Npi0_seen = CountNPdgsSeen(*ri, pi0PDG);
-  NcK_seen = CountNPdgsSeen(*ri, cKPDG);
-  NK0_seen = CountNPdgsSeen(*ri, K0PDG);
   Nothers_seen = CountNNotPdgsSeen(*ri, ExplicitPDGs);
 
   if (FSCLep_seen && (FSLepMom_rec.Mag() > 1E-8)) {
@@ -669,8 +617,6 @@ void Smearceptance_Tester::FillEventVariables(FitEvent *event) {
   Ncpim_contributed = CountNPdgsContributed(*ri, cpimPDG);
   Ncpi_contributed = Ncpip_contributed + Ncpim_contributed;
   Npi0_contributed = CountNPdgsContributed(*ri, pi0PDG);
-  NcK_contributed = CountNPdgsContributed(*ri, cKPDG);
-  NK0_contributed = CountNPdgsContributed(*ri, K0PDG);
   Ngamma_contributed = CountNPdgsContributed(*ri, GammaPDG);
   Nothers_contibuted = CountNNotPdgsContributed(*ri, ExplicitPDGs);
 
@@ -683,18 +629,13 @@ void Smearceptance_Tester::FillEventVariables(FitEvent *event) {
   EffWeight = ri->Weight;
 
   flagCCINC_true = PDGFSLep_true & 1;
-  flagCC0K_true = (NcK_true + NK0_true) == 0;
-  flagCC0Pi_true =
-      flagCCINC_true && flagCC0K_true && ((Ncpi_true + Npi0_true) == 0);
-  flagCC1Pi_true =
-      flagCCINC_true && flagCC0K_true && ((Ncpi_true + Npi0_true) == 1);
+  flagCC0Pi_true = (Ncpi_true + Npi0_true) == 0;
+  flagCC1Pi_true = (Ncpi_true + Npi0_true) == 1;
 
-  flagCCINC_rec = FSCLep_seen && flagCCINC_true;
-  flagCC0K_rec = (NcK_seen + NK0_seen) == 0;
-  flagCC0Pi_rec =
-      flagCCINC_rec && flagCC0K_rec && ((Ncpi_seen + Npi0_seen) == 0);
-  flagCC1Pi_rec =
-      flagCCINC_rec && flagCC0K_rec && ((Ncpi_seen + Npi0_seen) == 1);
+  flagCCINC_rec = FSCLep_seen && PDGFSLep_true & 1;
+  flagCC0Pi_rec = ((Ncpi_seen + Npi0_seen) == 0) && flagCCINC_rec;
+  flagCC1Pi_rec = ((Ncpi_seen + Npi0_seen) == 1) && flagCCINC_rec;
+  flagCCOther_rec = flagCCINC_rec && !(flagCC0Pi_rec ||flagCC1Pi_rec);
 
   if (OutputSummaryTree) {
     // Fill the eventVariables Tree
@@ -712,6 +653,25 @@ void Smearceptance_Tester::FillEventVariables(FitEvent *event) {
 
     ERecDistrib->Fill(EISLep_LepHadVis_rec / 1000.0,
                       flagCCINC_rec ? Weight * PredEvtRateWeight : 0);
+
+    RecoSmear_CC0Pi->Fill(EISLep_true / 1000.0,
+                    flagCC0Pi_rec ? EISLep_LepHadVis_rec / 1000.0 : -1, Weight);
+
+    ERecDistrib_CC0Pi->Fill(EISLep_LepHadVis_rec / 1000.0,
+                      flagCC0Pi_rec ? Weight * PredEvtRateWeight : 0);
+
+    RecoSmear_CC1Pi->Fill(EISLep_true / 1000.0,
+                    flagCC1Pi_rec ? EISLep_LepHadVis_rec / 1000.0 : -1, Weight);
+
+    ERecDistrib_CC1Pi->Fill(EISLep_LepHadVis_rec / 1000.0,
+                      flagCC1Pi_rec ? Weight * PredEvtRateWeight : 0);
+
+     RecoSmear_CCOther->Fill(EISLep_true / 1000.0,
+                    flagCCOther_rec ? EISLep_LepHadVis_rec / 1000.0 : -1, Weight);
+
+    ERecDistrib_CCOther->Fill(EISLep_LepHadVis_rec / 1000.0,
+                      flagCCOther_rec ? Weight * PredEvtRateWeight : 0);
+
   }
 };
 
@@ -749,13 +709,74 @@ void Smearceptance_Tester::Write(std::string drawOpt) {
     }
   }
 
+  TH2D *SmearMatrix_ev_CC0Pi =
+      static_cast<TH2D *>(RecoSmear_CC0Pi->Clone("ELepHadVis_Smear_ev_CC0Pi"));
+
+  for (Int_t trueAxis_it = 1;
+       trueAxis_it < RecoSmear_CC0Pi->GetXaxis()->GetNbins() + 1; ++trueAxis_it) {
+    double NEISLep = ETrueDistrib_noweight->GetBinContent(trueAxis_it);
+
+    for (Int_t recoAxis_it = 1;
+         recoAxis_it < RecoSmear_CC0Pi->GetYaxis()->GetNbins() + 1; ++recoAxis_it) {
+      if (NEISLep > std::numeric_limits<double>::epsilon()) {
+        SmearMatrix_ev_CC0Pi->SetBinContent(
+            trueAxis_it, recoAxis_it,
+            SmearMatrix_ev_CC0Pi->GetBinContent(trueAxis_it, recoAxis_it) / NEISLep);
+      }
+    }
+  }
+
+  TH2D *SmearMatrix_ev_CC1Pi =
+      static_cast<TH2D *>(RecoSmear_CC1Pi->Clone("ELepHadVis_Smear_ev_CC1Pi"));
+
+  for (Int_t trueAxis_it = 1;
+       trueAxis_it < RecoSmear_CC1Pi->GetXaxis()->GetNbins() + 1; ++trueAxis_it) {
+    double NEISLep = ETrueDistrib_noweight->GetBinContent(trueAxis_it);
+
+    for (Int_t recoAxis_it = 1;
+         recoAxis_it < RecoSmear_CC1Pi->GetYaxis()->GetNbins() + 1; ++recoAxis_it) {
+      if (NEISLep > std::numeric_limits<double>::epsilon()) {
+        SmearMatrix_ev_CC1Pi->SetBinContent(
+            trueAxis_it, recoAxis_it,
+            SmearMatrix_ev_CC1Pi->GetBinContent(trueAxis_it, recoAxis_it) / NEISLep);
+      }
+    }
+  }
+
+  TH2D *SmearMatrix_ev_CCOther =
+      static_cast<TH2D *>(RecoSmear_CCOther->Clone("ELepHadVis_Smear_ev_CCOther"));
+
+  for (Int_t trueAxis_it = 1;
+       trueAxis_it < RecoSmear_CCOther->GetXaxis()->GetNbins() + 1; ++trueAxis_it) {
+    double NEISLep = ETrueDistrib_noweight->GetBinContent(trueAxis_it);
+
+    for (Int_t recoAxis_it = 1;
+         recoAxis_it < RecoSmear_CCOther->GetYaxis()->GetNbins() + 1; ++recoAxis_it) {
+      if (NEISLep > std::numeric_limits<double>::epsilon()) {
+        SmearMatrix_ev_CCOther->SetBinContent(
+            trueAxis_it, recoAxis_it,
+            SmearMatrix_ev_CCOther->GetBinContent(trueAxis_it, recoAxis_it) / NEISLep);
+      }
+    }
+  }
+
+
   ETrueDistrib_noweight->Write();
   ETrueDistrib->Write();
   ERecDistrib->Write();
+  ERecDistrib_CC0Pi->Write();
+  ERecDistrib_CC1Pi->Write();
+  ERecDistrib_CCOther->Write();
 
   RecoSmear->Write();
+  RecoSmear_CC0Pi->Write();
+  RecoSmear_CC1Pi->Write();
+  RecoSmear_CCOther->Write();
 
   SmearMatrix_ev->Write();
+  SmearMatrix_ev_CC0Pi->Write();
+  SmearMatrix_ev_CC1Pi->Write();
+  SmearMatrix_ev_CCOther->Write();
 
   TH2D *ResponseMatrix_ev =
       SmearceptanceUtils::SVDGetInverse(SmearMatrix_ev, SVDTruncation);

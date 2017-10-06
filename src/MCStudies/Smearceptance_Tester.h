@@ -73,21 +73,16 @@ class Smearceptance_Tester : public Measurement1D {
 
   float EISLep_true;
 
-  TLorentzVector HMFS_clep_true;
+  TLorentzVector HMFS_mu_true;
   TLorentzVector HMFS_pip_true;
   TLorentzVector HMFS_pim_true;
   TLorentzVector HMFS_cpi_true;
-  TLorentzVector HMFS_pi0_true;
-  TLorentzVector HMFS_cK_true;
-  TLorentzVector HMFS_K0_true;
   TLorentzVector HMFS_p_true;
 
   float KEFSHad_cpip_true;
   float KEFSHad_cpim_true;
   float KEFSHad_cpi_true;
   float TEFSHad_pi0_true;
-  float KEFSHad_cK_true;
-  float KEFSHad_K0_true;
   float KEFSHad_p_true;
   float KEFSHad_n_true;
 
@@ -106,24 +101,17 @@ class Smearceptance_Tester : public Measurement1D {
   int Ncpiminus_true;
   int Ncpi_true;
   int Npi0_true;
-  int NcK_true;
-  int NK0_true;
 
-  TLorentzVector HMFS_clep_rec;
+  TLorentzVector HMFS_mu_rec;
   TLorentzVector HMFS_pip_rec;
   TLorentzVector HMFS_pim_rec;
   TLorentzVector HMFS_cpi_rec;
-  TLorentzVector HMFS_pi0_rec;
-  TLorentzVector HMFS_cK_rec;
-  TLorentzVector HMFS_K0_rec;
   TLorentzVector HMFS_p_rec;
 
   float KEFSHad_cpip_rec;
   float KEFSHad_cpim_rec;
   float KEFSHad_cpi_rec;
   float TEFSHad_pi0_rec;
-  float KEFSHad_cK_rec;
-  float KEFSHad_K0_rec;
   float KEFSHad_p_rec;
   float KEFSHad_n_rec;
 
@@ -134,8 +122,6 @@ class Smearceptance_Tester : public Measurement1D {
   float EFSVis_cpim;
   float EFSVis_cpi;
   float EFSVis_pi0;
-  float EFSVis_cK;
-  float EFSVis_K0;
   float EFSVis_p;
   float EFSVis_n;
   float EFSVis_gamma;
@@ -149,8 +135,6 @@ class Smearceptance_Tester : public Measurement1D {
   int Ncpim_seen;
   int Ncpi_seen;
   int Npi0_seen;
-  int NcK_seen;
-  int NK0_seen;
   int Nothers_seen;
 
   float EISLep_QE_rec;
@@ -163,8 +147,6 @@ class Smearceptance_Tester : public Measurement1D {
   int Ncpim_contributed;
   int Ncpi_contributed;
   int Npi0_contributed;
-  int NcK_contributed;
-  int NK0_contributed;
   int Ngamma_contributed;
   int Nothers_contibuted;
 
@@ -178,14 +160,13 @@ class Smearceptance_Tester : public Measurement1D {
   float xsecScaling;
 
   bool flagCCINC_true;
-  bool flagCC0K_true;
   bool flagCC0Pi_true;
   bool flagCC1Pi_true;
 
   bool flagCCINC_rec;
-  bool flagCC0K_rec;
   bool flagCC0Pi_rec;
   bool flagCC1Pi_rec;
+  bool flagCCOther_rec;
 
   bool OutputSummaryTree;
 
@@ -196,6 +177,12 @@ class Smearceptance_Tester : public Measurement1D {
   TH1D *ETrueDistrib_noweight;
   TH1D *ERecDistrib;
 
+  TH2D *RecoSmear_CC0Pi;
+  TH1D *ERecDistrib_CC0Pi;
+  TH2D *RecoSmear_CC1Pi;
+  TH1D *ERecDistrib_CC1Pi;
+  TH2D *RecoSmear_CCOther;
+  TH1D *ERecDistrib_CCOther;
 };
 
 #endif
