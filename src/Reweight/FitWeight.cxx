@@ -1,6 +1,7 @@
 #include "FitWeight.h"
 
 #include "OscWeightEngine.h"
+#include "EventTypeWeightEngine.h"
 
 void FitWeight::AddRWEngine(int type) {
   switch (type) {
@@ -41,6 +42,9 @@ void FitWeight::AddRWEngine(int type) {
       break;
     case kOSCILLATION:
       fAllRW[type] = new OscWeightEngine();
+      break;
+    case kEVENTTYPE:
+      fAllRW[type] = new EventTypeWeightEngine();
       break;
     default:
       THROW("CANNOT ADD RW Engine for unknown dial type: " << type);
@@ -90,6 +94,10 @@ WeightEngineBase* FitWeight::GetRWEngine(int type) {
       if (fAllRW.count(type)) {
         return fAllRW[type];
       }
+    case kEVENTTYPE:
+      if (fAllRW.count(type)) {
+        return fAllRW[type];
+      }
     default: { THROW("CANNOT get RW Engine for dial type: " << type); }
   }
 }
@@ -105,7 +113,8 @@ switch (type) {
     case kCUSTOM:
     case kSPLINEPARAMETER:
     case kNIWG:
-    case kOSCILLATION:{
+    case kOSCILLATION:
+    case kEVENTTYPE:{
       return fAllRW.count(type);
     }
     default: { THROW("CANNOT get RW Engine for dial type: " << type); }
