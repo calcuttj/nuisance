@@ -142,6 +142,8 @@ int FitBase::ConvDialType(std::string type) {
     return kSPLINEPARAMETER;
   else if (!type.compare("osc_parameter"))
     return kOSCILLATION;
+  else if (!type.compare("eventtype_parameter"))
+    return kEVENTTYPE;
   else
     return kUNKNOWN;
 }
@@ -180,6 +182,9 @@ std::string FitBase::ConvDialType(int type) {
     }
     case kOSCILLATION: {
       return "osc_parameter";
+    }
+    case kEVENTTYPE: {
+      return "eventtype_parameter";
     }
     default:
       return "unknown_parameter";
@@ -314,6 +319,12 @@ int FitBase::GetDialEnum(int type, std::string name) {
       this_enum = -2;  // Not enabled
 #endif
     }
+    case kEVENTTYPE: {
+      int eventtypeEnum = EventTypeWeightEngine::SystEnumFromString(name);
+      if (eventtypeEnum != 0) {
+        this_enum = eventtypeEnum + offset;
+      }
+    }
   }
 
   // If Not Enabled
@@ -354,6 +365,8 @@ int Reweight::ConvDialType(std::string type) {
     return kSPLINEPARAMETER;
   else if (!type.compare("osc_parameter"))
     return kOSCILLATION;
+  else if (!type.compare("eventtype_parameter"))
+    return kEVENTTYPE;
   else
     return kUNKNOWN;
 }
@@ -393,7 +406,10 @@ std::string Reweight::ConvDialType(int type) {
     }
 
     case kOSCILLATION: {
-      return "spline_parameter";
+      return "osc_parameter";
+    }
+    case kEVENTTYPE: {
+      return "eventtype_parameter";
     }
     default:
       return "unknown_parameter";
@@ -447,11 +463,16 @@ int Reweight::T2KEnumFromName(std::string name) {
 
 int Reweight::OscillationEnumFromName(std::string name) {
 #ifdef __PROB3PP_ENABLED__
-  int oscEnum = OscWeightEngine::SystEnumFromString(name);
+
   return (oscEnum > 0) ? oscEnum : kNoDialFound;
 #else
   return kGeneratorNotBuilt;
 #endif
+}
+
+int Reweight::EventTypeEnumFromName(std::string name) {
+  int eventtypeEnum = EventTypeWeightEngine::SystEnumFromString(name);
+  return (eventtypeEnum > 0) ? eventtypeEnum : kNoDialFound;
 }
 
 int Reweight::NUISANCEEnumFromName(std::string name, int type) {
@@ -511,6 +532,10 @@ int Reweight::ConvDial(std::string fullname, int type, bool exceptions) {
 
     case kOSCILLATION:
       genenum = OscillationEnumFromName(name);
+      break;
+
+    case kEVENTTYPE:
+      genenum = EventTypeEnumFromName(name);
       break;
 
     default:

@@ -96,7 +96,7 @@ using namespace genie::rew;
 #include "GlobalDialList.h"
 #include "NUISANCESyst.h"
 
-enum extra_reweight_types { kOSCILLATION = kLast_generator_event_type };
+enum extra_reweight_types { kOSCILLATION = kLast_generator_event_type, kEVENTTYPE = kLast_generator_event_type };
 
 namespace FitBase {
 
