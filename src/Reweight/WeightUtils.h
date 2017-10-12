@@ -96,7 +96,7 @@ using namespace genie::rew;
 #include "GlobalDialList.h"
 #include "NUISANCESyst.h"
 
-enum extra_reweight_types { kOSCILLATION = kLast_generator_event_type, kEVENTTYPE = kLast_generator_event_type };
+enum extra_reweight_types { kOSCILLATION = kLast_generator_event_type, kEVENTTYPE = kLast_generator_event_type + 1 };
 
 namespace FitBase {
 
@@ -135,6 +135,7 @@ int CustomEnumFromName(std::string name);
 
 int NUISANCEEnumFromName(std::string name, int type);
 int OscillationEnumFromName(std::string name);
+int EventTypeEnumFromName(std::string name);
 
 static const int kNoDialFound = -1;
 static const int kNoTypeFound = -2;

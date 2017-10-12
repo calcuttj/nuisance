@@ -1,6 +1,7 @@
 #include "WeightUtils.h"
 
 #include "OscWeightEngine.h"
+#include "EventTypeWeightEngine.h"
 
 //********************************************************************
 TF1 FitBase::GetRWConvFunction(std::string type, std::string name) {
@@ -463,7 +464,7 @@ int Reweight::T2KEnumFromName(std::string name) {
 
 int Reweight::OscillationEnumFromName(std::string name) {
 #ifdef __PROB3PP_ENABLED__
-
+  int oscEnum = OscWeightEngine::SystEnumFromString(name);
   return (oscEnum > 0) ? oscEnum : kNoDialFound;
 #else
   return kGeneratorNotBuilt;

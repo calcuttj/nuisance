@@ -23,7 +23,7 @@
 
 #include <limits>
 
-enum nuTypes {
+/*enum nuTypes {
   kNuebarType = -1,
   kNumubarType = -2,
   kNutaubarType = -3,
@@ -48,7 +48,7 @@ nuTypes GetNuType(int pdg) {
       return kNuebarType;
     default: { THROW("Attempting to convert \"neutrino pdg\": " << pdg); }
   }
-}
+}*/
 
 EventTypeWeightEngine::EventTypeWeightEngine()
     :
@@ -156,8 +156,8 @@ bool EventTypeWeightEngine::NeedsEventReWeight() {
   return false;
 }
 
-/*double EventTypeWeightEngine::CalcWeight(BaseFitEvt* evt) {
-  static bool Warned = false;
+double EventTypeWeightEngine::CalcWeight(BaseFitEvt* evt) {
+/*  static bool Warned = false;
   if (evt->probe_E == 0xdeadbeef) {
     if (!Warned) {
       ERROR(WRN,
@@ -169,11 +169,12 @@ bool EventTypeWeightEngine::NeedsEventReWeight() {
     return 1;
   }
 
-  return CalcWeight(evt->probe_E * 1E-3, evt->probe_pdg);
+  return CalcWeight(evt->probe_E * 1E-3, evt->probe_pdg);*/
+  return 1;
 }
 
 double EventTypeWeightEngine::CalcWeight(double ENu, int PDGNu, int TargetPDGNu) {
-  if (LengthParam == 0xdeadbeef) {  // not configured.
+/*  if (LengthParam == 0xdeadbeef) {  // not configured.
     return 1;
   }
 #ifdef __PROB3PP_ENABLED__
@@ -222,7 +223,9 @@ double EventTypeWeightEngine::CalcWeight(double ENu, int PDGNu, int TargetPDGNu)
 #else
   return 1;
 #endif
-}*/
+*/
+return 1;
+}
 
 int EventTypeWeightEngine::SystEnumFromString(std::string const& name) {
   if (name == "WeightCC0Pi") {

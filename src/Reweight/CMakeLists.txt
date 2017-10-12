@@ -33,6 +33,7 @@ NUISANCEWeightEngine.cxx
 NUISANCEWeightCalcs.cxx
 NIWGWeightEngine.cxx
 OscWeightEngine.cxx
+EventTypeWeightEngine.cxx
 MINERvAWeightCalcs.cxx
 weightRPA.h
 )
