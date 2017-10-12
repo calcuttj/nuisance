@@ -111,6 +111,7 @@ public:
   std::vector<FDSample> FDSamples;
 
   double ScalePOT;
+  std::string rename;
 
   // ----- Other config
   bool UseRateErrors;

@@ -128,6 +128,10 @@ void Smear_SVDUnfold_Propagation_Osc::AddNDInputs(nuiskey &samplekey) {
   }
 
   NDSamples.push_back(nds);
+
+    if(samplekey.Has("name")){  
+    rename = samplekey.GetS("name");
+  }
 }
 
 void Smear_SVDUnfold_Propagation_Osc::SetupNDInputs() {
@@ -777,6 +781,7 @@ void Smear_SVDUnfold_Propagation_Osc::ConvertEventRates(void) {
 }
 
 void Smear_SVDUnfold_Propagation_Osc::Write(std::string drawOpt) {
+
   TDirectory *ogDir = gDirectory;
 
   ConvertEventRates();
@@ -797,7 +802,8 @@ void Smear_SVDUnfold_Propagation_Osc::Write(std::string drawOpt) {
   for (size_t nd_it = 0; nd_it < NDSamples.size(); ++nd_it) {
     NDSample &nds = NDSamples[nd_it];
     std::stringstream ss("");
-    ss << "Smear_SVDUnfold_Propagation_Osc_NDSample_" << nd_it;
+//    ss << "Smear_SVDUnfold_Propagation_Osc_NDSample_" << rename << nd_it;
+    ss << rename << "_NDSample_" << nd_it;
     if (ogDir) {
       ogDir->mkdir(ss.str().c_str());
       ogDir->cd(ss.str().c_str());
@@ -826,7 +832,7 @@ void Smear_SVDUnfold_Propagation_Osc::Write(std::string drawOpt) {
     FDSample &fds = FDSamples[fds_it];
 
     std::stringstream ss("");
-    ss << "Smear_SVDUnfold_Propagation_Osc_FDSample_" << fds_it;
+    ss << rename << "_FDSample_" << fds_it;
     if (ogDir) {
       ogDir->mkdir(ss.str().c_str());
       ogDir->cd(ss.str().c_str());
