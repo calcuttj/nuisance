@@ -56,6 +56,11 @@ class EventTypeWeightEngine : public WeightEngineBase {
 
   void Config();
 
+  //Returning weights
+  double GetWeightCC0Pi(void);
+  double GetWeightCC1Pi(void);
+  double GetWeightCCOther(void);
+
   // Functions requiring Override
   void IncludeDial(std::string name, double startval);
 

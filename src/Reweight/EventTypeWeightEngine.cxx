@@ -58,6 +58,18 @@ EventTypeWeightEngine::EventTypeWeightEngine()
   Config();
 }
 
+double EventTypeWeightEngine::GetWeightCC0Pi(void){
+  return WeightCC0Pi;
+}
+
+double EventTypeWeightEngine::GetWeightCC1Pi(void){
+  return WeightCC1Pi;
+}
+
+double EventTypeWeightEngine::GetWeightCCOther(void){
+  return WeightCCOther;
+}
+
 void EventTypeWeightEngine::Config() {
   std::vector<nuiskey> EventTypeParam = Config::QueryKeys("EventTypeParam");
 

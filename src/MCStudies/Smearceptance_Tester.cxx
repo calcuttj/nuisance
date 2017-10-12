@@ -141,6 +141,22 @@ Smearceptance_Tester::Smearceptance_Tester(nuiskey samplekey) {
   RecoSmear_CC0Pi = NULL;
   RecoSmear_CC1Pi = NULL;
   RecoSmear_CCOther = NULL;
+
+  FitWeight *fw = FitBase::GetRW();
+  std::cout<< "Has reweight? " << fw->HasRWEngine(kEVENTTYPE) << std::endl;
+  if(fw->HasRWEngine(kEVENTTYPE)) {
+
+    EventTypeWeightEngine *etWE = dynamic_cast<EventTypeWeightEngine *>(fw->GetRWEngine(kEVENTTYPE));  
+    weightCC0Pi = etWE->GetWeightCC0Pi();
+    weightCC1Pi = etWE->GetWeightCC1Pi();
+    weightCCOther = etWE->GetWeightCCOther();
+    std::cout<<"Reweighting event types" <<
+    "CC0Pi " << weightCC0Pi <<
+    "CC1Pi " << weightCC1Pi <<
+    "CCOther " << weightCCOther << std::endl;
+  }
+
+
   if (RecBinL != 0xdeadbeef) {
     QLOG(SAM, "Using binning True: " << TrueNBins << ", [" << TrueBinL << " -- "
                                      << TrueBinH << "], Rec: " << RecNBins
@@ -154,8 +170,11 @@ Smearceptance_Tester::Smearceptance_Tester(nuiskey samplekey) {
                  TrueBinL, TrueBinH);
     ERecDistrib = new TH1D("ELepRec_rate", ";Rec E_{#nu};Count", RecNBins,
                            RecBinL, RecBinH);
+    ERecDistrib_weighted = new TH1D("ELepRec_weighted_rate", ";Rec E_{#nu};Count", RecNBins,
+                           RecBinL, RecBinH);
     ETrueDistrib->Sumw2();
     ERecDistrib->Sumw2();
+    ERecDistrib_weighted->Sumw2();
 
     ERecDistrib_CC0Pi = new TH1D("ELepRec_rate_CC0Pi", ";Rec E_{#nu};Count", RecNBins,
                            RecBinL, RecBinH);
@@ -169,6 +188,19 @@ Smearceptance_Tester::Smearceptance_Tester(nuiskey samplekey) {
     ERecDistrib_CC0Pi->Sumw2();
     ERecDistrib_CC1Pi->Sumw2();
     ERecDistrib_CCOther->Sumw2();
+
+    ERecDistrib_weighted_CC0Pi = new TH1D("ELepRec_weighted_rate_CC0Pi", ";Rec E_{#nu};Count", RecNBins,
+                           RecBinL, RecBinH);
+
+    ERecDistrib_weighted_CC1Pi = new TH1D("ELepRec_weighted_rate_CC1Pi", ";Rec E_{#nu};Count", RecNBins,
+                           RecBinL, RecBinH);
+                           
+    ERecDistrib_weighted_CCOther = new TH1D("ELepRec_weighted_rate_CCOther", ";Rec E_{#nu};Count", RecNBins,
+                           RecBinL, RecBinH);
+
+    ERecDistrib_weighted_CC0Pi->Sumw2();
+    ERecDistrib_weighted_CC1Pi->Sumw2();
+    ERecDistrib_weighted_CCOther->Sumw2();
 
     RecoSmear =
         new TH2D("ELepHadVis_Recon", ";True E_{#nu};Recon. E_{#nu}", RecNBins,
@@ -360,8 +392,11 @@ void Smearceptance_Tester::AddEventVariablesToTree() {
     eventVariables->Branch("flagCC0Pi_rec", &flagCC0Pi_rec, "flagCC0Pi_rec/O");
     eventVariables->Branch("flagCC1Pi_rec", &flagCC1Pi_rec, "flagCC1Pi_rec/O");
     eventVariables->Branch("flagCCOther_rec", &flagCCOther_rec, "flagCCOther_rec/O");
+    eventVariables->Branch("weightCC0Pi", &weightCC0Pi, "weightCC0Pi/F");
+    eventVariables->Branch("weightCC1Pi", &weightCC1Pi, "weightCC1Pi/F");
+    eventVariables->Branch("weightCCOther", &weightCCOther, "weightCCOther/F");
   }
-
+//EventType: add branches for modified weights
   PredEvtRateWeight = 1;
   if (fEvtRateScaleFactor != 0xdeadbeef) {
     if (OutputSummaryTree) {
@@ -731,6 +766,7 @@ void Smearceptance_Tester::FillEventVariables(FitEvent *event) {
   flagCC1Pi_rec =
       flagCCINC_rec && flagCC0K_rec && ((Ncpi_seen + Npi0_seen) == 1);
   flagCCOther_rec = flagCCINC_rec && !(flagCC0Pi_rec ||flagCC1Pi_rec);
+  
 
   if (OutputSummaryTree) {
     // Fill the eventVariables Tree
@@ -748,6 +784,12 @@ void Smearceptance_Tester::FillEventVariables(FitEvent *event) {
 
     ERecDistrib->Fill(EISLep_LepHadVis_rec / 1000.0,
                       flagCCINC_rec ? Weight * PredEvtRateWeight : 0);
+//EventType: add ERecDistrib_weighted    
+    float new_weight;
+    //should give the right weight
+    new_weight = flagCCINC_rec*( flagCCOther_rec*weightCCOther + flagCC0Pi_rec*weightCC0Pi + flagCC1Pi_rec*weightCC1Pi  ); 
+    ERecDistrib_weighted->Fill(EISLep_LepHadVis_rec / 1000.0,
+                      new_weight * Weight * PredEvtRateWeight);
 
     RecoSmear_CC0Pi->Fill(EISLep_true / 1000.0,
                     flagCC0Pi_rec ? EISLep_LepHadVis_rec / 1000.0 : -1, Weight);
@@ -755,18 +797,26 @@ void Smearceptance_Tester::FillEventVariables(FitEvent *event) {
     ERecDistrib_CC0Pi->Fill(EISLep_LepHadVis_rec / 1000.0,
                       flagCC0Pi_rec ? Weight * PredEvtRateWeight : 0);
 
+    ERecDistrib_weighted_CC0Pi->Fill(EISLep_LepHadVis_rec / 1000.0,
+                      flagCC0Pi_rec*weightCC0Pi * Weight * PredEvtRateWeight);
+
     RecoSmear_CC1Pi->Fill(EISLep_true / 1000.0,
                     flagCC1Pi_rec ? EISLep_LepHadVis_rec / 1000.0 : -1, Weight);
 
     ERecDistrib_CC1Pi->Fill(EISLep_LepHadVis_rec / 1000.0,
                       flagCC1Pi_rec ? Weight * PredEvtRateWeight : 0);
 
-     RecoSmear_CCOther->Fill(EISLep_true / 1000.0,
+    ERecDistrib_weighted_CC1Pi->Fill(EISLep_LepHadVis_rec / 1000.0,
+                      flagCC1Pi_rec*weightCC1Pi * Weight * PredEvtRateWeight);
+
+    RecoSmear_CCOther->Fill(EISLep_true / 1000.0,
                     flagCCOther_rec ? EISLep_LepHadVis_rec / 1000.0 : -1, Weight);
 
     ERecDistrib_CCOther->Fill(EISLep_LepHadVis_rec / 1000.0,
                       flagCCOther_rec ? Weight * PredEvtRateWeight : 0);
 
+    ERecDistrib_weighted_CCOther->Fill(EISLep_LepHadVis_rec / 1000.0,
+                      flagCCOther_rec*weightCCOther * Weight * PredEvtRateWeight);
   }
 };
 
@@ -862,6 +912,11 @@ void Smearceptance_Tester::Write(std::string drawOpt) {
   ERecDistrib_CC0Pi->Write();
   ERecDistrib_CC1Pi->Write();
   ERecDistrib_CCOther->Write();
+
+  ERecDistrib_weighted->Write();
+  ERecDistrib_weighted_CC0Pi->Write();
+  ERecDistrib_weighted_CC1Pi->Write();
+  ERecDistrib_weighted_CCOther->Write();
 
   RecoSmear->Write();
   RecoSmear_CC0Pi->Write();

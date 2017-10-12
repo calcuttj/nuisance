@@ -28,6 +28,7 @@
 #include "OscWeightEngine.h"
 #endif
 
+#include "EventTypeWeightEngine.h"
 //********************************************************************
 class Smearceptance_Tester : public Measurement1D {
   //********************************************************************
@@ -188,6 +189,10 @@ class Smearceptance_Tester : public Measurement1D {
   bool flagCC1Pi_rec;
   bool flagCCOther_rec;
 
+  float weightCC0Pi;
+  float weightCC1Pi;
+  float weightCCOther;
+
   bool OutputSummaryTree;
 
   int SVDTruncation;
@@ -196,13 +201,17 @@ class Smearceptance_Tester : public Measurement1D {
   TH1D *ETrueDistrib;
   TH1D *ETrueDistrib_noweight;
   TH1D *ERecDistrib;
+  TH1D *ERecDistrib_weighted;
 
   TH2D *RecoSmear_CC0Pi;
   TH1D *ERecDistrib_CC0Pi;
+  TH1D *ERecDistrib_weighted_CC0Pi;
   TH2D *RecoSmear_CC1Pi;
   TH1D *ERecDistrib_CC1Pi;
+  TH1D *ERecDistrib_weighted_CC1Pi;
   TH2D *RecoSmear_CCOther;
   TH1D *ERecDistrib_CCOther;
+  TH1D *ERecDistrib_weighted_CCOther;
 };
 
 #endif
