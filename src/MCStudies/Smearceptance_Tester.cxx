@@ -147,9 +147,9 @@ Smearceptance_Tester::Smearceptance_Tester(nuiskey samplekey) {
   if(fw->HasRWEngine(kEVENTTYPE)) {
 
     EventTypeWeightEngine *etWE = dynamic_cast<EventTypeWeightEngine *>(fw->GetRWEngine(kEVENTTYPE));  
-    weightCC0Pi = etWE->GetWeightCC0Pi();
-    weightCC1Pi = etWE->GetWeightCC1Pi();
-    weightCCOther = etWE->GetWeightCCOther();
+    weightCC0Pi = etWE->GetDialValue("WeightCC0Pi");
+    weightCC1Pi = etWE->GetDialValue("WeightCC1Pi");
+    weightCCOther = etWE->GetDialValue("WeightCCOther");
     std::cout<<"Reweighting event types" <<
     "CC0Pi " << weightCC0Pi <<
     "CC1Pi " << weightCC1Pi <<

@@ -71,7 +71,7 @@ double EventTypeWeightEngine::GetWeightCCOther(void){
 }
 
 void EventTypeWeightEngine::Config() {
-  std::vector<nuiskey> EventTypeParam = Config::QueryKeys("EventTypeParam");
+  std::vector<nuiskey> EventTypeParam = Config::QueryKeys("parameter");
 
   if (EventTypeParam.size() < 1) {
     ERROR(WRN,
@@ -81,19 +81,29 @@ void EventTypeWeightEngine::Config() {
     sleep(10);
     return;
   }
+  QLOG(FIT, "N keys: " << EventTypeParam.size());
+  QLOG(FIT, "name: " << EventTypeParam[0].GetS("name"));
+  QLOG(FIT, "name: " << EventTypeParam[1].GetS("name"));
+  QLOG(FIT, "name: " << EventTypeParam[2].GetS("name"));
 
-  WeightCC0Pi = EventTypeParam[0].Has("WeightCC0Pi") ? EventTypeParam[0].GetD("WeightCC0Pi") : WeightCC0Pi;
+/*  WeightCC0Pi = EventTypeParam[0].Has("WeightCC0Pi") ? EventTypeParam[0].GetD("WeightCC0Pi") : WeightCC0Pi;
 
   WeightCC1Pi = EventTypeParam[0].Has("WeightCC1Pi") ? EventTypeParam[0].GetD("WeightCC1Pi") : WeightCC1Pi;
 
   WeightCCOther = EventTypeParam[0].Has("WeightCCOther") ? EventTypeParam[0].GetD("WeightCCOther") : WeightCCOther;
-
-  QLOG(FIT, "Configured oscillation weighter:");
-
-  params[0] = WeightCC0Pi;
+  */
+ 
+  for(int i = 0; i < EventTypeParam.size();++i){
+    double nom = EventTypeParam[i].GetD("nominal");
+    IncludeDial(EventTypeParam[i].GetS("name"), nom);
+    SetDialValue(EventTypeParam[i].GetS("name"), nom);
+  }
+  QLOG(FIT, "Configured event type weighter:");
+//Change below to if size < 1
+/*  params[0] = WeightCC0Pi;
   params[1] = WeightCC1Pi;
   params[2] = WeightCCOther;
-
+*/
   QLOG(FIT, "\tWeightCC0Pi;  : " << params[0]);
   QLOG(FIT, "\tWeightCC1Pi;  : " << params[1]);
   QLOG(FIT, "\tWeightCCOther;: " << params[2]);

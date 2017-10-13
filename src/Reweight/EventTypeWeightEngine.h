@@ -25,6 +25,8 @@
 
 #include "WeightEngineBase.h"
 
+#include "WeightUtils.h"
+
 #include <cmath>
 
 class EventTypeWeightEngine : public WeightEngineBase {

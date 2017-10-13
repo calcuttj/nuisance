@@ -84,7 +84,7 @@ void Smear_SVDUnfold_Propagation_Osc::AddNDInputs(nuiskey &samplekey) {
           "ND ETrue/ERec smearing matrix. e.g. "
           "ObsInput=\"input.root[FDObs_species,FDSmearing_species]\"");
     }
-
+    //Rebuild every time
     nds.NDToSpectrumSmearingMatrix = dynamic_cast<TH2D *>(NDObsInputs[1]);
     if (!nds.NDToSpectrumSmearingMatrix) {
       ERROR(
@@ -772,7 +772,7 @@ void Smear_SVDUnfold_Propagation_Osc::PropagateFDSample(size_t fds_it) {
       fds.NDFD_Corrected_Spectrum_Hist, fds.FD_Smeared_Spectrum_Hist,
       fds.SpectrumToFDSmearingMatrix, 1000, true);
 }
-
+//BuildCCINC_smear_matrix
 void Smear_SVDUnfold_Propagation_Osc::ConvertEventRates(void) {
   for (size_t fds_it = 0; fds_it < FDSamples.size(); ++fds_it) {
     PropagateFDSample(fds_it);
