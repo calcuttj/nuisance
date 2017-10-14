@@ -21,6 +21,8 @@
 #define Smear_SVDUnfold_Propagation_Osc_H_SEEN
 
 #include "Measurement1D.h"
+#include "EventTypeWeightEngine.h"
+
 /// Class for building simple oscillation analyses.
 ///
 /// An example tag which runs a FHC beam and performs a numudisp and nue app
@@ -75,6 +77,17 @@ public:
     Int_t NuPDG;
 
     double XSecToEvRateScale;
+
+    /*TH1D *NDDataHist_CC0Pi; 
+    TH1D *NDDataHist_CC1Pi;
+    TH1D *NDDataHist_CCOther;
+    TH2D *NDToSpectrumSmearingMatrix_CC0Pi; 
+    TH2D *NDToSpectrumSmearingMatrix_CC1Pi;
+    TH2D *NDToSpectrumSmearingMatrix_CCOther;*/
+
+    TH1D *NDDataHist_type[3];
+    TH2D *NDToSpectrumSmearingMatrix_type[3];
+
   };
 
  public:
@@ -93,6 +106,7 @@ public:
   void SetupChi2Hists();
   void UpdateChi2Hists();
 
+  void BuildWeightedMatrix(NDSample nds, EventTypeWeightEngine *etWE);
   // ----- Near detector things
   void AddNDInputs(nuiskey &samplekey);
   void SetupNDInputs();

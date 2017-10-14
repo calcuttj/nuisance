@@ -94,6 +94,7 @@ void EventTypeWeightEngine::Config() {
   */
  
   for(int i = 0; i < EventTypeParam.size();++i){
+    if(EventTypeParam[i].GetS("type") != "eventtype_parameter") continue;
     double nom = EventTypeParam[i].GetD("nominal");
     IncludeDial(EventTypeParam[i].GetS("name"), nom);
     SetDialValue(EventTypeParam[i].GetS("name"), nom);
@@ -161,10 +162,10 @@ double EventTypeWeightEngine::GetDialValue(std::string name) {
   return params[dial - 1];
 }
 double EventTypeWeightEngine::GetDialValue(int nuisenum) {
-  if (!(nuisenum % 1000) || (nuisenum % 1000) > 6) {
+  if (!(nuisenum % 1000) || (nuisenum % 1000) > 3) {
     THROW("EventTypeWeightEngine passed dial enum: "
           << (nuisenum % 1000)
-          << " that it does not understand, expected [1,6].");
+          << " that it does not understand, expected [1,3].");
   }
   return params[(nuisenum % 1000) - 1];
 }

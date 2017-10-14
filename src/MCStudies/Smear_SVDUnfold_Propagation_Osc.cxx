@@ -22,11 +22,17 @@
 #include "SmearceptanceUtils.h"
 
 #include "OscWeightEngine.h"
+//#include "EventTypeWeightEngine.h"
 
 #include "HistogramInputHandler.h"
 
 void Smear_SVDUnfold_Propagation_Osc::AddNDInputs(nuiskey &samplekey) {
   NDSample nds;
+
+  //Get Event Type Weight engine
+  FitWeight *fw = FitBase::GetRW();
+  EventTypeWeightEngine *etWE = NULL;
+  if(fw->HasRWEngine(kEVENTTYPE)) etWE =  dynamic_cast<EventTypeWeightEngine *>(fw->GetRWEngine(kEVENTTYPE));
 
   // Plot Setup -------------------------------------------------------
   // Check that we have the relevant near detector histograms specified.
@@ -45,71 +51,143 @@ void Smear_SVDUnfold_Propagation_Osc::AddNDInputs(nuiskey &samplekey) {
           "Smear_SVDUnfold_Propagation_Osc expects a Histogram input that "
           "contains the ND observed spectrum.");
     }
-    if (HInput->NHistograms() != 2) {
-      THROW(
-          "Input expected to contain 2 histograms. "
-          "HISTO:input.root[NDObs_TH1D,NDSmear_TH2D]");
-    }
-    nds.NDDataHist = dynamic_cast<TH1D *>(HInput->GetHistogram(0));
-    nds.NDToSpectrumSmearingMatrix =
-        dynamic_cast<TH2D *>(HInput->GetHistogram(1));
+    if (!etWE){
+      QLOG(SAM, "Not using Event Type Weighting");
+      if (HInput->NHistograms() != 2) {
+        THROW(
+            "Input expected to contain 2 histograms. "
+            "HISTO:input.root[NDObs_TH1D,NDSmear_TH2D]");
+      }
+      nds.NDDataHist = dynamic_cast<TH1D *>(HInput->GetHistogram(0));
+      nds.NDToSpectrumSmearingMatrix =
+          dynamic_cast<TH2D *>(HInput->GetHistogram(1));
 
-    if (!nds.NDDataHist) {
-      THROW("Expected a valid TH1D input for the ND observed spectrum.");
-    }
+      if (!nds.NDDataHist) {
+        THROW("Expected a valid TH1D input for the ND observed spectrum.");
+      }
 
-    if (!nds.NDToSpectrumSmearingMatrix) {
-      THROW("Expected a valid TH2D input for the ND observed smearing.");
+      if (!nds.NDToSpectrumSmearingMatrix) {
+        THROW("Expected a valid TH2D input for the ND observed smearing.");
+      }
+//      nds.NDDataHist_type = {NULL};
+//      nds.NDToSpectrumSmearingMatrix_type = {NULL};
     }
-  } else {
+    else{
+      QLOG(SAM, "Using Event Type Weighting");
+      if (HInput->NHistograms() != 6) {//Figure out better way than hard coding
+        THROW(
+            "Input expected to contain 6 histograms. "
+            "HISTO:input.root[NDObs_CC0Pi_TH1D,NDSmear_CC0Pi_TH2D,NDObs_CC1Pi_TH1D,NDSmear_CC1Pi_TH2D,NDObs_CCOther_TH1D,NDSmear_CCOther_TH2D]");
+      }
+      for(int i = 0; i < 3; ++i){
+        nds.NDDataHist_type[i] = dynamic_cast<TH1D *>(HInput->GetHistogram(2*i));
+        nds.NDToSpectrumSmearingMatrix_type[i] =
+            dynamic_cast<TH2D *>(HInput->GetHistogram(2*i + 1));
+
+        if (!nds.NDDataHist_type[i]) {
+          THROW("Expected a valid TH1D input for the ND observed spectrum " << i);
+        }
+
+        if (!nds.NDToSpectrumSmearingMatrix_type[i]) {
+          THROW("Expected a valid TH2D input for the ND observed smearing " << i);
+        }
+      }
+    }
+  }
+  else {
     std::vector<TH1 *> NDObsInputs =
-        PlotUtils::GetTH1sFromRootFile(samplekey.GetS("ObsInput"));
-    if (NDObsInputs.size() < 2) {
+      PlotUtils::GetTH1sFromRootFile(samplekey.GetS("ObsInput"));
+    if (!etWE){
+      QLOG(SAM, "Not using Event Type Weighting");
+
+      if (NDObsInputs.size() < 2) {
       THROW(
           "Near detector sample must contain the observed ERec spectrum and "
           "the "
           "ND ETrue/ERec smearing matrix. e.g. "
           "ObsInput=\"input.root[NDObs_species,NDSmearing_species]\"");
-    }
+      }
 
-    nds.NDDataHist = dynamic_cast<TH1D *>(NDObsInputs[0]);
-    if (!nds.NDDataHist) {
-      ERROR(FTL,
+      nds.NDDataHist = dynamic_cast<TH1D *>(NDObsInputs[0]);
+      if (!nds.NDDataHist) {
+        ERROR(FTL,
             "First histogram from ObsInput attribute was not a TH1D containing "
             "the near detector observed ERec spectrum ("
                 << samplekey.GetS("ObsInput") << ").");
-      THROW(
-          "Near detector sample must contain the observed ERec spectrum and "
-          "the "
-          "ND ETrue/ERec smearing matrix. e.g. "
-          "ObsInput=\"input.root[FDObs_species,FDSmearing_species]\"");
-    }
-    //Rebuild every time
-    nds.NDToSpectrumSmearingMatrix = dynamic_cast<TH2D *>(NDObsInputs[1]);
-    if (!nds.NDToSpectrumSmearingMatrix) {
-      ERROR(
-          FTL,
-          "Second histogram from ObsInput attribute was not a TH2D containing "
-          "the near detector ETrue/ERec smearing matrix ("
+        THROW(
+           "Near detector sample must contain the observed ERec spectrum and "
+           "the "
+           "ND ETrue/ERec smearing matrix. e.g. "
+           "ObsInput=\"input.root[FDObs_species,FDSmearing_species]\"");
+      }
+      nds.NDToSpectrumSmearingMatrix = dynamic_cast<TH2D *>(NDObsInputs[1]);
+      if (!nds.NDToSpectrumSmearingMatrix) {
+        ERROR(
+           FTL,
+            "Second histogram from ObsInput attribute was not a TH2D containing "
+            "the near detector ETrue/ERec smearing matrix ("
               << samplekey.GetS("ObsInput") << ").");
-      THROW(
+        THROW(
           "Near detector sample must contain the observed ERec spectrum and "
           "the "
           "ND ETrue/ERec smearing matrix. e.g. "
           "ObsInput=\"input.root[FDObs_species,FDSmearing_species]\"");
+      }
+//      nds.NDDataHist_type = {NULL};
+//      nds.NDToSpectrumSmearingMatrix_type = {NULL};
+    }
+    else{
+      QLOG(SAM, "Using Event Type Weighting");
+      if (NDObsInputs.size() < 6) {
+      THROW(
+          "Near detector sample must contain the observed ERec spectrum and "
+          "the "
+          "ND ETrue/ERec smearing matrix. e.g. "
+          "ObsInput=\"input.root[NDObs_species,NDSmearing_species,NDObs_species,NDSmearing_species,NDObs_species,NDSmearing_species]\"");
+      }
+      
+      for(int i = 0; i < 6; ++i){
+        nds.NDDataHist_type[i] = dynamic_cast<TH1D *>(NDObsInputs[2*i]);
+        if (!nds.NDDataHist_type[i]) {
+          ERROR(FTL,
+              "First histogram from ObsInput attribute was not a TH1D containing "
+              "the near detector observed ERec spectrum ("
+                  << samplekey.GetS("ObsInput") << ").");
+          THROW(
+             "Near detector sample must contain the observed ERec spectrum and "
+             "the "
+             "ND ETrue/ERec smearing matrix. e.g. "
+             "ObsInput=\"input.root[FDObs_species,FDSmearing_species]\"");
+        }
+        nds.NDToSpectrumSmearingMatrix_type[i] = dynamic_cast<TH2D *>(NDObsInputs[2*i + 1]);
+        if (!nds.NDToSpectrumSmearingMatrix_type[i]) {
+          ERROR(
+             FTL,
+              "Second histogram from ObsInput attribute was not a TH2D containing "
+              "the near detector ETrue/ERec smearing matrix ("
+                << samplekey.GetS("ObsInput") << ").");
+          THROW(
+            "Near detector sample must contain the observed ERec spectrum and "
+            "the "
+            "ND ETrue/ERec smearing matrix. e.g. "
+            "ObsInput=\"input.root[FDObs_species,FDSmearing_species]\"");
+        }
+      }
     }
   }
+//Will have to !etWE this
+  if(!etWE){
+    nds.NDDataHist->Scale(ScalePOT);
 
-  nds.NDDataHist->Scale(ScalePOT);
-
-  if (UseRateErrors) {
-    for (Int_t bi_it = 1; bi_it < nds.NDDataHist->GetXaxis()->GetNbins() + 1;
-         ++bi_it) {
-      nds.NDDataHist->SetBinError(bi_it,
-                                  sqrt(nds.NDDataHist->GetBinContent(bi_it)));
+    if (UseRateErrors) {
+      for (Int_t bi_it = 1; bi_it < nds.NDDataHist->GetXaxis()->GetNbins() + 1;
+           ++bi_it) {
+        nds.NDDataHist->SetBinError(bi_it,
+                                    sqrt(nds.NDDataHist->GetBinContent(bi_it)));
+      }
     }
   }
-
+ //And replace for etWE within the build function
   nds.TruncateStart = 0;
   if (samplekey.Has("TruncateStart")) {
     nds.TruncateStart = samplekey.GetI("TruncateStart");
@@ -137,7 +215,6 @@ void Smear_SVDUnfold_Propagation_Osc::AddNDInputs(nuiskey &samplekey) {
 void Smear_SVDUnfold_Propagation_Osc::SetupNDInputs() {
   for (size_t nd_it = 0; nd_it < NDSamples.size(); ++nd_it) {
     NDSample &nds = NDSamples[nd_it];
-
     TMatrixD NDToSpectrumResponseMatrix_l = SmearceptanceUtils::GetMatrix(
         SmearceptanceUtils::SVDGetInverse(nds.NDToSpectrumSmearingMatrix));
 
@@ -773,6 +850,40 @@ void Smear_SVDUnfold_Propagation_Osc::PropagateFDSample(size_t fds_it) {
       fds.SpectrumToFDSmearingMatrix, 1000, true);
 }
 //BuildCCINC_smear_matrix
+
+void Smear_SVDUnfold_Propagation_Osc::BuildWeightedMatrix(NDSample nds, EventTypeWeightEngine *etWE){
+  const int NDials = 3;//Throw in number based on how many are present
+                       //'const' Not needed if not using an array for the weights
+  double weights[NDials];
+
+  for (int i = 0; i <NDials; ++i){
+    weights[i] = etWE->GetDialValue(i); 
+    nds.NDDataHist_type[i]->Scale(weights[i]); 
+    nds.NDToSpectrumSmearingMatrix_type[i]->Scale(weights[i]); 
+  }
+  
+  //Clone the first of the sets
+  nds.NDDataHist = (TH1D*)nds.NDDataHist_type[0]->Clone();
+  nds.NDToSpectrumSmearingMatrix = (TH2D*)nds.NDToSpectrumSmearingMatrix_type[0]->Clone();
+ 
+  //Add the last ones
+  for( int i = 1; i < NDials; ++i){
+    nds.NDDataHist->Add(nds.NDDataHist_type[i]);
+    nds.NDToSpectrumSmearingMatrix->Add(nds.NDToSpectrumSmearingMatrix_type[i]);
+  }
+
+  nds.NDDataHist->Scale(ScalePOT);
+
+  if (UseRateErrors) {
+    for (Int_t bi_it = 1; bi_it < nds.NDDataHist->GetXaxis()->GetNbins() + 1;
+         ++bi_it) {
+      nds.NDDataHist->SetBinError(bi_it,
+                                  sqrt(nds.NDDataHist->GetBinContent(bi_it)));
+    }
+  }
+}
+
+
 void Smear_SVDUnfold_Propagation_Osc::ConvertEventRates(void) {
   for (size_t fds_it = 0; fds_it < FDSamples.size(); ++fds_it) {
     PropagateFDSample(fds_it);
